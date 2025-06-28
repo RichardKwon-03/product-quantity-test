@@ -1,0 +1,77 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: my-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: test
+      MYSQL_DATABASE: test
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7
+    container_name: my-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  nestjs1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-nestjs-1
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    expose:
+      - "3000"
+
+  nestjs2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-nestjs-2
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    expose:
+      - "3000"
+
+  nestjs3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: my-nestjs-3
+    restart: always
+    depends_on:
+      - mysql
+      - redis
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:alpine
+    container_name: my-nginx
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - nestjs1
+      - nestjs2
+      - nestjs3
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+volumes:
+  mysql_data:
+  redis_data:
